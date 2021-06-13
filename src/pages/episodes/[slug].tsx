@@ -1,12 +1,15 @@
 import { GetStaticProps, GetStaticPaths } from 'next';
 import Image from 'next/image';
 import Link  from 'next/link';
+import Head  from 'next/head';
 import { format, parseISO } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import { api } from '../../services/api';
 import { convertDurantionToTimeString } from '../../utils/convertDurantionToTimeString';
 
 import styles from './episode.module.scss';
+import { useContext } from 'react';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 type Episode = {
   id: string;
@@ -17,6 +20,7 @@ type Episode = {
   duration: number;
   durantionAsString: string;
   description: string;
+  url: string;
 }
 
 type EpisodeProps = {
@@ -24,8 +28,13 @@ type EpisodeProps = {
 }
 
 export default function Episode({ episode }: EpisodeProps) { 
+  const { play } = useContext(PlayerContext)
   return (
     <div className={styles.episode}>
+      <Head>
+        <title>{episode.title} | Podcastr</title>
+      </Head>
+
       <div className={styles.thumbnailContainer}>
        <Link href="/">
           <button>
@@ -38,7 +47,7 @@ export default function Episode({ episode }: EpisodeProps) {
           src={episode.thumbnail} 
           objectFit="cover"
         />
-        <button>
+        <button type="button" onClick={()=>play(episode)}>
           <img src="/play.svg" alt="Tocar episodio" />
         </button>
         </div>
@@ -46,7 +55,7 @@ export default function Episode({ episode }: EpisodeProps) {
            <h1>{episode.title}</h1>
             <span>{episode.members}</span>
             <span>{episode.publishedAt}</span>
-            <span>{episode.duration}</span>
+            <span>{episode.durantionAsString}</span>
         </header>
 
         <div 
@@ -94,6 +103,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     duration: Number(data.file.duration),
     durantionAsString: convertDurantionToTimeString(Number(data.file.duration)),
     description: data.description,
+    url: data.file.url,
   }
 
   return {
