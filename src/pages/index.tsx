@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import {  GetStaticProps } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,6 +8,7 @@ import { api } from '../services/api';
 import { convertDurantionToTimeString } from '../utils/convertDurantionToTimeString';
 
 import styles from './home.module.scss';
+import { PlayerContext } from '../contexts/PlayerContext';
 
 type Episode = {
   id: string;
@@ -16,6 +18,7 @@ type Episode = {
   publishedAt: Date;
   duration: number;
   durantionAsString: string;
+  url: string;
 }
 
 type HomeProps = {
@@ -24,10 +27,12 @@ type HomeProps = {
 }
 
 export default function Home({ latestEpisodes, allEpisodes } : HomeProps) {
+  const { play } = useContext(PlayerContext);
+
   return (
     <div className={styles.homepage}>
       <section className={styles.latestEpisodes}>
-        <h2>Últimos lançamentos</h2>
+        <h2>Últimos lançamentos </h2>
 
         <ul>
              {latestEpisodes.map(episode => {
@@ -50,7 +55,7 @@ export default function Home({ latestEpisodes, allEpisodes } : HomeProps) {
                     <span>{episode.durantionAsString}</span>
                   </div>
 
-                  <button type="button">
+                  <button type="button" onClick={() => play(episode)}>
                     <img src="/play-green.svg" alt="Tocar episodio" />
                   </button>
                  </li>
@@ -127,7 +132,7 @@ export const getStaticProps: GetStaticProps = async () => {
       publishedAt: format(parseISO(episode.published_at), 'd MMM yy', { locale: ptBR }),
       duration: Number(episode.file.duration),
       durantionAsString: convertDurantionToTimeString(Number(episode.file.duration)),
-      description: episode.file.url,
+      url: episode.file.url,
     }
   });
 
